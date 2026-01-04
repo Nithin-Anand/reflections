@@ -8,18 +8,21 @@ A web-based personal journal application with a clean, modern design, built with
 - Write and save journal entries with timestamps
 - Calendar date picker to view entries by date
 - Clean, modern UI design with Tailwind CSS
+- Theme toggle (light/dark mode)
 - Dynamic content updates with HTMX (no page reloads)
 - SQLite database for local storage
 - Django admin interface for data management
 - Responsive design for desktop and mobile
+- Docker support for easy deployment
 
 ## Tech Stack
 
-- **Backend**: Django 6.0
+- **Backend**: Django 5.x
 - **Frontend**: Tailwind CSS 3.x (CDN) + HTMX
 - **Database**: SQLite3
-- **Testing**: pytest with 100% coverage (for database layer)
+- **Testing**: pytest with pytest-django
 - **Code Quality**: Ruff formatter and linter
+- **Deployment**: Docker with docker-compose
 
 ## Installation
 
@@ -47,26 +50,65 @@ uv run python manage.py runserver
 
 The application will be available at `http://localhost:8000`
 
-## Migrating Data from NiceGUI Version
+## Docker Deployment
 
-If you have data from the previous NiceGUI version, run the migration script:
+### Using Docker Compose (Recommended)
 
+1. Build and start the application:
 ```bash
-uv run python migrate_old_data.py
+docker-compose up -d
 ```
 
-**Note:** Migrated users will have temporary passwords. Reset them via the Django admin interface at `http://localhost:8000/admin/`
+2. Create a superuser (first time only):
+```bash
+docker-compose exec journal python manage.py createsuperuser
+```
+
+3. View logs:
+```bash
+docker-compose logs -f journal
+```
+
+4. Stop the application:
+```bash
+docker-compose down
+```
+
+The application will be available at `http://localhost:8000`
+
+Data is persisted in a Docker volume named `journal_data`.
+
+### Environment Variables
+
+Create a `.env` file for production deployment:
+
+```env
+DJANGO_SECRET_KEY=your-secret-key-here
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+```
+
+### Production Considerations
+
+For production deployment:
+1. Set `DJANGO_DEBUG=False`
+2. Use a strong `DJANGO_SECRET_KEY`
+3. Configure `DJANGO_ALLOWED_HOSTS` with your domain
+4. Consider using a production WSGI server (e.g., gunicorn)
+5. Set up HTTPS with a reverse proxy (nginx/traefik)
+6. Consider migrating to PostgreSQL for better performance
+7. Set up automated backups of the database volume
 
 ## Running Tests
 
-Run database layer tests:
+Run tests:
 ```bash
 uv run pytest tests/
 ```
 
 Run tests with coverage:
 ```bash
-uv run pytest tests/ --cov=database --cov=auth_service --cov-report=term-missing
+uv run pytest tests/ --cov=journal --cov-report=term-missing
 ```
 
 ## Code Quality
@@ -87,32 +129,36 @@ uv run ruff check --fix
 ```
 .
 ├── journal_project/          # Django project settings
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
+│   ├── settings.py           # Main Django configuration
+│   ├── urls.py               # Root URL routing
+│   ├── wsgi.py               # WSGI application
+│   └── asgi.py               # ASGI application
 ├── journal/                  # Main Django app
-│   ├── models.py             # JournalEntry model
+│   ├── models.py             # JournalEntry & UserProfile models
 │   ├── views.py              # Views for auth and journal
 │   ├── forms.py              # Django forms
 │   ├── urls.py               # App URL routing
 │   ├── admin.py              # Admin configuration
+│   ├── migrations/           # Database migrations
 │   └── templates/journal/    # HTML templates
 │       ├── base.html
 │       ├── login.html
 │       ├── register.html
 │       ├── journal.html
 │       └── partials/
-│           └── entries.html  # HTMX partial
+│           ├── entries.html    # HTMX partial
+│           └── entry_form.html # HTMX partial
 ├── static/
 │   └── js/
 │       └── htmx.min.js       # HTMX library
-├── database/                 # Old database (backup)
-│   ├── client.py             # Legacy code
-│   └── main.db               # Old SQLite database
 ├── tests/                    # Unit tests
-├── migrate_old_data.py       # Data migration script
+│   └── test_views.py
 ├── manage.py                 # Django management script
-└── pyproject.toml            # Project dependencies
+├── Dockerfile                # Docker image definition
+├── docker-compose.yml        # Docker Compose configuration
+├── entrypoint.sh             # Docker entrypoint script
+├── pyproject.toml            # Project dependencies (uv)
+└── uv.lock                   # Locked dependencies
 ```
 
 ## Architecture
@@ -168,14 +214,16 @@ The application follows Django's MVT (Model-View-Template) architecture:
 
 ## Future Enhancements
 
-Possible improvements:
+Planned improvements:
 - Entry editing and deletion
-- Rich text editor
+- Entry ratings/mood tracking
+- Rich text editor (WYSIWYG)
 - Entry search functionality
 - Tags and categories
 - Export to PDF/Markdown
-- Dark mode toggle
-- Entry statistics and insights
+- Entry statistics and insights (word count, streaks, etc.)
+- Word cloud visualization
+- Old entries highlighting
 - Mobile app (using Django REST API)
 
 ## Development

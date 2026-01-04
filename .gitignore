@@ -130,11 +130,5 @@ dmypy.json
 *~
 .DS_Store
 
-# Database files
-database/main.db
-*.db
-
-# Archive of old NiceGUI code
-_archive/
-
+# Ruff cache
 .ruff_cache

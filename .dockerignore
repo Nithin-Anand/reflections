@@ -36,23 +36,8 @@ db.sqlite3
 .env
 .env.local
 
-# Archive of old code
-_archive/
-
-# NiceGUI cache
-.nicegui
-
 # Ruff cache
 .ruff_cache
 
-# Documentation
-*.md
-!README.md
-
-# Docker
-Dockerfile
-docker-compose*.yml
-.dockerignore
-
-# Old database (will be migrated separately if needed)
-database/
+# Documentation (included in image)
+# *.md files are included for reference

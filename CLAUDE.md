@@ -17,10 +17,12 @@ Favour modularity, code reuse and testability
 
 # Tech Stack
 
-Python for back-end
-For the front-end, I'm not sure where to use something simple like nicegui or use Django and proper web frameworks. Please determine best course of action. Consider scalability, how nice the UI can look, performance and maintainability
-sqlite3 for the database
-Containerise via Docker (not needed first)
+- **Backend**: Django 5.x (Python web framework)
+- **Frontend**: Tailwind CSS 3.x + HTMX for dynamic interactions
+- **Database**: SQLite3
+- **Deployment**: Docker with docker-compose
+- **Testing**: pytest with pytest-django
+- **Code Quality**: Ruff (formatting and linting)
 
 # Program Requirements
 
@@ -32,19 +34,26 @@ This program is a personal journal app that can be deployed locally or on home s
 - The database schema for the journal entry should save both a timestamp and the diary entry.
 - Secure authentication should be supported
 
-# Workflow
+# Current Implementation Status
 
-1. Based on the requirements, determine how the front-end should be created. Check with user before proceeding.
-2. Create the backend code for connecting to the database, inserting new entries, reading, committing etc.
-3. Proceed based on what Claude thinks should be created next.
+The application is built with Django following MVT architecture:
+- ✅ User authentication (login/registration)
+- ✅ Journal entry creation with timestamps
+- ✅ Calendar date picker for viewing entries by date
+- ✅ Modern, clean UI with Tailwind CSS
+- ✅ Dynamic updates with HTMX (no page reloads)
+- ✅ Theme toggle (light/dark mode)
+- ✅ Docker deployment support
+- ✅ Unit tests for views
 
+# Features to Add
 
-# Features to add
-
-- Delete entries
-- Ratings
-- Dark mode
-- Better UI
-- Old entries highlighting
-- Word cloud
-- Rich text formatting
+- Entry deletion
+- Entry editing
+- Entry ratings/mood tracking
+- Old entries highlighting (visual indicators for age)
+- Word cloud visualization
+- Rich text formatting (WYSIWYG editor)
+- Entry search functionality
+- Tags and categories
+- Export to PDF/Markdown

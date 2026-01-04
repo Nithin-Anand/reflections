@@ -25,7 +25,6 @@ COPY journal/ ./journal/
 COPY tests/ ./tests/
 COPY static/ ./static/
 COPY manage.py ./
-COPY migrate_old_data.py ./
 COPY entrypoint.sh ./
 
 # Make entrypoint executable
