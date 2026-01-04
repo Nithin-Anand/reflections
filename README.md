@@ -81,35 +81,108 @@ The application will be available at `http://localhost:8000`
 - The database file is located at `/app/data/db.sqlite3` inside the container
 - Data persists across container restarts and rebuilds
 
-### Environment Variables
+### Environment Variables Setup
 
-Create a `.env` file for production deployment:
+#### Required Environment Variables for Production
+
+For production deployment, you **must** configure these environment variables:
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DJANGO_SECRET_KEY` | **Yes** | Insecure default | Cryptographic signing key - must be unique and secret |
+| `DJANGO_DEBUG` | No | `False` | Debug mode - must be `False` in production |
+| `DJANGO_ALLOWED_HOSTS` | **Yes** | `localhost,127.0.0.1` | Comma-separated list of allowed hostnames/IPs |
+| `DATA_DIR` | No | Auto-set in Docker | Directory for database storage |
+
+#### Step-by-Step Setup
+
+**1. Generate a secure secret key:**
+
+```bash
+# Generate using Python
+python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+
+# Or using OpenSSL
+openssl rand -base64 50
+```
+
+**2. Create a `.env` file in your project directory:**
+
+```bash
+# Create .env file (replace values with your own)
+cat > .env << 'EOF'
+DJANGO_SECRET_KEY=your-generated-secret-key-from-step-1
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=your-server-ip,yourdomain.com
+DATA_DIR=/app/data
+EOF
+```
+
+**3. Secure the `.env` file:**
+
+```bash
+# Make it readable only by you
+chmod 600 .env
+
+# Verify it's in .gitignore (already included)
+grep "^\.env$" .gitignore
+```
+
+**4. Deploy with Docker Compose:**
+
+```bash
+# Docker Compose automatically loads .env from the same directory
+docker-compose up -d
+```
+
+#### Example .env File
 
 ```env
-DJANGO_SECRET_KEY=your-secret-key-here
+# REQUIRED: Generate your own secret key (see step 1 above)
+DJANGO_SECRET_KEY=django-insecure-example-change-this-to-a-real-secret-key
+
+# REQUIRED: Set to False for production
 DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+
+# REQUIRED: Add your server's IP address or domain name
+DJANGO_ALLOWED_HOSTS=192.168.1.100,homeserver.local,yourdomain.com
+
+# Optional: Automatically set in Docker
 DATA_DIR=/app/data
 ```
 
-Available environment variables:
-- `DJANGO_SECRET_KEY`: Secret key for Django (required for production)
-- `DJANGO_DEBUG`: Set to `False` for production (default: `False`)
-- `DJANGO_ALLOWED_HOSTS`: Comma-separated list of allowed hosts (default: `localhost,127.0.0.1`)
-- `DATA_DIR`: Directory for persistent data (default: not set, uses project root)
+#### Security Best Practices
 
-**Note:** When running with Docker, `DATA_DIR=/app/data` is automatically set to store the database in the persistent volume.
+1. **Never commit `.env` to version control** - It's already in `.gitignore`
+2. **Backup your secret key** - Store it in a password manager
+3. **Use a unique key per environment** - Don't reuse between dev/prod
+4. **Restrict file permissions** - `chmod 600 .env`
+5. **Rotate keys if compromised** - Generate a new key and update `.env`
+
+#### Important Notes
+
+⚠️ **Changing the secret key will:**
+- Invalidate all user sessions (users must log in again)
+- Invalidate password reset tokens
+- Invalidate signed cookies
+
+✅ **The `.env` file is automatically loaded by Docker Compose** - No additional configuration needed
 
 ### Production Considerations
 
-For production deployment:
-1. Set `DJANGO_DEBUG=False`
-2. Use a strong `DJANGO_SECRET_KEY`
-3. Configure `DJANGO_ALLOWED_HOSTS` with your domain
-4. Consider using a production WSGI server (e.g., gunicorn)
-5. Set up HTTPS with a reverse proxy (nginx/traefik)
-6. Consider migrating to PostgreSQL for better performance
-7. Set up automated backups of the database volume
+**After configuring environment variables (see above), consider these additional steps:**
+
+1. **Use a production WSGI server** - Replace Django dev server with gunicorn or uWSGI
+2. **Set up HTTPS** - Use a reverse proxy (nginx, traefik, or Caddy) with Let's Encrypt
+3. **Database backups** - Set up automated backups of the Docker volume:
+   ```bash
+   # Backup the database volume
+   docker run --rm -v productivity-application_journal_data:/data -v $(pwd):/backup \
+     ubuntu tar czf /backup/journal-backup-$(date +%Y%m%d).tar.gz /data
+   ```
+4. **Monitor logs** - Set up log rotation and monitoring
+5. **Consider PostgreSQL** - For multi-user deployments, migrate from SQLite to PostgreSQL
+6. **Regular updates** - Keep Docker images and dependencies updated
 
 ## Running Tests
 
