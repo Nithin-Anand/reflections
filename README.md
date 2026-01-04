@@ -24,6 +24,56 @@ A web-based personal journal application with a clean, modern design, built with
 - **Code Quality**: Ruff formatter and linter
 - **Deployment**: Docker with docker-compose
 
+## Quick Start for Home Server Deployment
+
+**Prerequisites:** Docker and Docker Compose installed on your home server
+
+Deploy the application in 5 minutes:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Nithin-Anand/reflections.git
+cd reflections
+
+# 2. Generate a secret key
+SECRET_KEY=$(python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')
+
+# 3. Create .env file with your configuration
+cat > .env << EOF
+DJANGO_SECRET_KEY=$SECRET_KEY
+DJANGO_DEBUG=False
+DJANGO_ALLOWED_HOSTS=$(hostname -I | awk '{print $1}'),$(hostname)
+DATA_DIR=/app/data
+EOF
+
+# 4. Secure the .env file
+chmod 600 .env
+
+# 5. Deploy with Docker Compose
+docker-compose up -d
+
+# 6. Create your admin user
+docker-compose exec journal uv run python manage.py createsuperuser
+
+# 7. Access the application
+echo "Application running at: http://$(hostname -I | awk '{print $1}'):8000"
+```
+
+**That's it!** Your journal is now running.
+
+**Next steps:**
+- Navigate to the application in your browser
+- Log in with your admin credentials
+- Start journaling!
+- (Optional) See "Environment Variables Setup" below for advanced configuration
+- (Optional) See "Production Considerations" for HTTPS setup and backups
+
+---
+
+## Local Development Setup
+
+For local development without Docker:
+
 ## Installation
 
 1. Install dependencies using uv:
@@ -50,9 +100,11 @@ uv run python manage.py runserver
 
 The application will be available at `http://localhost:8000`
 
-## Docker Deployment
+## Docker Deployment (Detailed Configuration)
 
-### Using Docker Compose (Recommended)
+For detailed Docker configuration options, manual deployment, or troubleshooting, see below.
+
+### Manual Docker Compose Commands
 
 1. Build and start the application:
 ```bash
