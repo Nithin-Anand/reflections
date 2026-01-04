@@ -1,34 +1,44 @@
 {% if entries %}
-    <div class="space-y-6">
+    <div class="space-y-8">
         {% for entry in entries %}
-        <div class="relative pl-8 border-l-2 border-ink-200 dark:border-white/10 hover:border-ink-400 dark:hover:border-white/30 transition-colors duration-300 group">
+        <div class="relative pl-8 group">
+            <!-- Timeline line -->
+            <div class="absolute left-0 top-2 bottom-0 w-px bg-ink-200 dark:bg-white/10 group-last:bottom-auto group-last:h-full"></div>
+            
             <!-- Timeline dot -->
-            <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-paper-100 dark:bg-ink-800 border-2 border-ink-300 dark:border-ink-500 group-hover:bg-ink-300 dark:group-hover:bg-ink-600 group-hover:border-ink-500 dark:group-hover:border-ink-400 transition-all duration-300"></div>
-            
-            <div class="mb-2 flex items-center justify-between">
-                <span class="text-sm font-bold text-ink-500 dark:text-ink-400 font-sans tracking-wide uppercase">{{ entry.timestamp|date:"g:i A" }}</span>
-                <button hx-post="{% url 'delete_entry' entry.id %}"
-                        hx-target="#entries-list"
-                        hx-swap="innerHTML"
-                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                        hx-confirm="Are you sure you want to delete this memory?"
-                        class="text-ink-300 dark:text-ink-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
-                        title="Delete entry">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <div class="prose prose-stone dark:prose-invert max-w-none">
-                <p class="text-ink-900 dark:text-ink-100 text-lg leading-relaxed whitespace-pre-wrap font-serif">{{ entry.content }}</p>
+            <div class="absolute -left-[5px] top-2 w-3 h-3 rounded-full bg-paper-100 dark:bg-ink-800 border-2 border-ink-300 dark:border-ink-500 group-hover:bg-ink-500 dark:group-hover:bg-ink-400 group-hover:border-ink-500 dark:group-hover:border-ink-400 transition-all duration-300 shadow-sm"></div>
+
+            <div class="glass-panel rounded-xl p-6 dark:bg-paper-800/30 border border-transparent hover:border-ink-200 dark:hover:border-white/10 transition-all duration-300 hover:shadow-md">
+                <div class="mb-3 flex items-center justify-between">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-paper-200 dark:bg-white/5 text-ink-600 dark:text-ink-300 font-sans tracking-wide uppercase shadow-sm">
+                        {{ entry.timestamp|date:"g:i A" }}
+                    </span>
+                    
+                    {% if not target_id %}
+                    <button hx-post="{% url 'delete_entry' entry.id %}?target={{ target_id|default:'entries-list' }}"
+                            hx-target="#{{ target_id|default:'entries-list' }}"
+                            hx-swap="innerHTML"
+                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                            hx-confirm="Are you sure you want to delete this memory?"
+                            class="opacity-0 group-hover:opacity-100 focus:opacity-100 text-ink-300 dark:text-ink-600 hover:text-red-500 dark:hover:text-red-400 transition-all p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20"
+                            title="Delete entry">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                    {% endif %}
+                </div>
+
+                <div class="prose prose-stone dark:prose-invert max-w-none">
+                    <p class="text-ink-900 dark:text-ink-100 text-lg leading-relaxed whitespace-pre-wrap font-serif">{{ entry.content }}</p>
+                </div>
             </div>
         </div>
         {% endfor %}
     </div>
 {% else %}
-    <div class="text-center py-16 opacity-60">
+    <div class="text-center py-8 opacity-60">
         <div class="mb-4 text-4xl">✍️</div>
-        <p class="text-ink-500 dark:text-ink-400 font-serif text-lg italic">The page is blank, waiting for your thoughts...</p>
+        <p class="text-ink-500 dark:text-ink-400 font-serif {% if target_id %}text-sm{% else %}text-lg{% endif %} italic">{% if target_id %}No entries on this day{% else %}The page is blank, waiting for your thoughts...{% endif %}</p>
     </div>
 {% endif %}

@@ -28,23 +28,31 @@
         <!-- Left Column: New Entry Form -->
         <div class="lg:col-span-2 space-y-8">
             <!-- New Entry Card -->
-            <div class="glass-panel rounded-xl p-8 dark:bg-paper-800/30">
-                <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-100 mb-6 font-serif">New Reflection</h2>
+            <div class="glass-panel rounded-xl p-8 dark:bg-paper-800/40 border border-white/20 shadow-lg backdrop-blur-xl transition-all duration-300 hover:shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-ink-900 dark:text-ink-100 font-serif tracking-tight">New Reflection</h2>
+                    <div class="flex space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-paper-100 text-ink-800 dark:bg-ink-800 dark:text-ink-200">
+                             {{ today|date:"l" }}
+                        </span>
+                    </div>
+                </div>
+                
                 <form hx-post="{% url 'create_entry' %}"
                       hx-target="#entries-list"
                       hx-swap="innerHTML"
-                      class="space-y-4">
+                      class="space-y-6">
                     {% csrf_token %}
-                    <div class="relative">
-                        <!-- Custom CSS for textarea in dark mode needs to be handled or simply use tailwind classes if the widget accepts them. 
-                             Django widgets default rendering is plain. We'll use the same scoped style approach or target textarea generically in base or here. 
-                             Let's add a style block for textarea at the bottom like in login. -->
-                        {{ form.content }}
-                        <!-- Removing the absolute overlay as it might interfere with dark mode input style if not carefully managed. Instead simple border on input is safer. -->
+                    <div class="relative group">
+                         <div class="absolute -inset-0.5 bg-gradient-to-r from-ink-200 to-paper-300 dark:from-ink-700 dark:to-ink-900 rounded-xl opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200 blur"></div>
+                        <div class="relative bg-white dark:bg-black/20 rounded-xl">
+                            {{ form.content }}
+                        </div>
                     </div>
-                    <div class="flex justify-end pt-2">
-                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-paper-50 bg-ink-800 dark:bg-ink-100 dark:text-ink-900 hover:bg-ink-900 dark:hover:bg-white btn-transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-500">
-                            <svg class="w-5 h-5 mr-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="flex justify-between items-center pt-2">
+                        <p class="text-sm text-ink-400 dark:text-ink-500 italic">"The unexamined life is not worth living."</p>
+                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-md text-base font-medium text-paper-50 bg-ink-900 dark:bg-ink-100 dark:text-ink-900 hover:bg-black dark:hover:bg-white hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-500">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                             </svg>
                             Save Memory
@@ -53,13 +61,13 @@
                 </form>
             </div>
 
-            <!-- Entries List -->
-            <div class="glass-panel rounded-xl p-8 min-h-[400px] dark:bg-paper-800/30">
+            <!-- Today's Entries List -->
+            <div class="glass-panel rounded-xl p-8 min-h-[400px] dark:bg-paper-800/30 border border-white/10">
                 <div class="flex items-baseline justify-between mb-8 border-b border-ink-200 dark:border-white/10 pb-4">
                     <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-100 font-serif">
-                        <span id="selected-date-display">{{ selected_date|date:"F d, Y" }}</span>
+                        Today's Reflections
                     </h2>
-                    <span class="text-sm text-ink-400 dark:text-ink-500 font-sans italic">Daily Chronicles</span>
+                    <span class="text-sm text-ink-400 dark:text-ink-500 font-sans italic">{{ today|date:"F d, Y" }}</span>
                 </div>
                 <div id="entries-list">
                     {% include 'journal/partials/entries.html' %}
@@ -67,54 +75,119 @@
             </div>
         </div>
 
-        <!-- Right Column: Calendar -->
+        <!-- Right Column: Sidebar -->
         <div class="lg:col-span-1 space-y-8">
-            <div class="glass-panel rounded-xl p-6 sticky top-24 dark:bg-paper-800/30">
-                <h2 class="text-xl font-semibold text-ink-900 dark:text-ink-100 mb-6 font-serif">Time Travel</h2>
+            
+             <!-- Random Entry (Active Recall) - MOVED & REDESIGNED -->
+            {% if random_entry %}
+            <div class="glass-panel rounded-xl p-6 relative overflow-hidden group dark:bg-paper-800/40 border border-ink-200/50 dark:border-white/10 hover:border-ink-300 dark:hover:border-white/20 transition-all duration-500 shadow-lg hover:shadow-xl">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style="background-image: radial-gradient(#3e3223 1px, transparent 1px); background-size: 20px 20px;"></div>
+                
+                <div class="absolute -right-6 -top-6 opacity-5 dark:opacity-10 group-hover:opacity-10 dark:group-hover:opacity-20 transition-all duration-700 rotate-12 scale-150">
+                    <svg class="w-32 h-32 text-ink-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+
+                <div class="relative z-10">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-ink-800 dark:text-ink-100 font-serif tracking-tight flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            On this day
+                        </h2>
+                        <span class="px-2 py-1 rounded bg-paper-200 dark:bg-white/10 text-xs font-semibold text-ink-600 dark:text-ink-300 font-sans uppercase tracking-wider">
+                            {{ random_entry.timestamp|date:"Y" }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-4 pl-4 border-l-2 border-ink-300 dark:border-ink-600/50">
+                        <div class="text-xs font-semibold text-ink-500 dark:text-ink-400 font-sans uppercase mb-1 tracking-wide">
+                            {{ random_entry.timestamp|date:"F d" }} at {{ random_entry.timestamp|date:"g:i A" }}
+                        </div>
+                        <div class="prose prose-sm prose-stone dark:prose-invert">
+                            <p class="text-ink-900 dark:text-ink-50 italic font-serif leading-relaxed line-clamp-3 text-lg">
+                                "{{ random_entry.content }}"
+                            </p>
+                        </div>
+                    </div>
+
+                    <button data-date="{{ random_entry.timestamp|date:'Y-m-d' }}"
+                            onclick="selectPastDate(this.dataset.date)"
+                            class="w-full group/btn flex items-center justify-center space-x-2 px-4 py-2 bg-white/50 dark:bg-black/20 hover:bg-white dark:hover:bg-white/10 border border-ink-200 dark:border-white/5 rounded-lg text-sm font-medium text-ink-700 dark:text-ink-200 transition-all duration-300">
+                        <span>Read full entry</span>
+                        <svg class="w-4 h-4 transform group-hover/btn:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Time Travel -->
+            <div class="glass-panel rounded-xl p-6 dark:bg-paper-800/30">
+                <h2 class="text-xl font-semibold text-ink-900 dark:text-ink-100 mb-6 font-serif flex items-center">
+                    <svg class="w-5 h-5 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Time Travel
+                </h2>
                 <input type="date"
                        id="date-picker"
-                       value="{{ selected_date|date:'Y-m-d' }}"
-                       class="w-full px-4 py-3 bg-white/50 dark:bg-black/30 border border-ink-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-ink-500 focus:border-transparent text-ink-800 dark:text-ink-200 font-sans shadow-sm"
+                       value=""
+                       max="{{ today|date:'Y-m-d' }}"
+                       class="w-full px-4 py-3 bg-white/50 dark:bg-black/30 border border-ink-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-ink-500 focus:border-transparent text-ink-800 dark:text-ink-200 font-sans shadow-sm transition-all"
                        hx-get="{% url 'get_entries' %}"
-                       hx-target="#entries-list"
+                       hx-target="#past-entries-container"
                        hx-swap="innerHTML"
                        hx-include="this"
                        hx-trigger="change"
                        name="date"
-                       onchange="updateDateDisplay(this.value)">
+                       onchange="showPastEntries(this.value)">
 
-                <!-- Decoration / Quote -->
-                <div class="mt-8 p-6 bg-paper-200/50 dark:bg-black/20 rounded-lg border border-paper-300 dark:border-white/5 text-center">
-                    <div class="text-2xl mb-2 text-ink-400 dark:text-ink-500">❦</div>
-                    <p class="text-sm text-ink-600 dark:text-ink-400 italic font-serif leading-relaxed">"Preserve your memories, for they are the library of your soul."</p>
+                <!-- Dates with Entries -->
+                {% if dates_with_entries %}
+                <div class="mt-6">
+                    <h3 class="text-xs font-bold text-ink-500 dark:text-ink-400 mb-3 font-sans uppercase tracking-widest">Recorded Days</h3>
+                    <div class="max-h-48 overflow-y-auto space-y-1 pr-2 scrollbar-thin">
+                        {% for entry_date in dates_with_entries %}
+                        <button data-date="{{ entry_date|date:'Y-m-d' }}"
+                                onclick="selectPastDate(this.dataset.date)"
+                                class="past-date-btn w-full text-left px-3 py-2 rounded-md text-sm font-sans transition-all duration-200 flex items-center text-ink-600 dark:text-ink-300 hover:bg-paper-200 dark:hover:bg-white/10 hover:translate-x-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-ink-400 dark:bg-ink-500 mr-3 flex-shrink-0"></span>
+                            {{ entry_date|date:"M d, Y" }}
+                            {% if entry_date == today %}
+                            <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-ink-100 dark:bg-white/10 text-ink-500 dark:text-ink-400 uppercase tracking-wide">Today</span>
+                            {% endif %}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Past Entries Viewer (Hidden by default) -->
+            <div id="past-entries-wrapper" class="hidden">
+                <div class="glass-panel rounded-xl p-6 dark:bg-paper-800/40 border border-ink-200 dark:border-white/10 shadow-lg relative">
+                     <div class="absolute -inset-0.5 bg-gradient-to-br from-paper-200 to-transparent dark:from-white/5 dark:to-transparent rounded-xl opacity-50 pointer-events-none"></div>
+                    <div class="relative">
+                        <div class="flex items-center justify-between mb-4 border-b border-ink-200 dark:border-white/10 pb-3">
+                            <h2 class="text-lg font-bold text-ink-900 dark:text-ink-100 font-serif">
+                                <span id="past-date-display"></span>
+                            </h2>
+                            <button onclick="closePastEntries()" class="p-1 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-400 hover:text-ink-600 dark:text-ink-500 dark:hover:text-ink-300 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="past-entries-container" class="max-h-96 overflow-y-auto scrollbar-thin pr-2">
+                            <!-- Past entries loaded here via HTMX -->
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Random Entry -->
-            {% if random_entry %}
-            <div class="glass-panel rounded-xl p-6 relative overflow-hidden group dark:bg-paper-800/30">
-                <div class="absolute -right-4 -top-4 opacity-5 dark:opacity-10 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity rotate-12">
-                    <svg class="w-24 h-24 text-ink-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <h2 class="text-xl font-semibold text-ink-900 dark:text-ink-100 mb-4 font-serif">Rediscovered Memory</h2>
-                <div class="mb-3">
-                    <span class="text-sm font-bold text-ink-500 dark:text-ink-400 font-sans tracking-wide uppercase">{{ random_entry.timestamp|date:"F d, Y" }}</span>
-                </div>
-                <div class="prose prose-sm prose-stone dark:prose-invert mb-4">
-                    <p class="text-ink-800 dark:text-ink-200 italic font-serif leading-relaxed line-clamp-4">"{{ random_entry.content }}"</p>
-                </div>
-                <button data-date="{{ random_entry.timestamp|date:'Y-m-d' }}"
-                        onclick="document.getElementById('date-picker').value = this.dataset.date; document.getElementById('date-picker').dispatchEvent(new Event('change'));" 
-                        class="text-sm text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white font-medium transition-colors flex items-center group/link">
-                    Travel to this day 
-                    <svg class="w-4 h-4 ml-1 transform group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                    </svg>
-                </button>
-            </div>
-            {% endif %}
+            <!-- REMOVED: Decoration / Quote Widget -->
+            
         </div>
     </div>
 </main>
@@ -154,14 +227,74 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
     }
+
+    /* Custom scrollbar for dates list */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: rgba(92, 75, 55, 0.3);
+        border-radius: 3px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(92, 75, 55, 0.5);
+    }
+    @media (prefers-color-scheme: dark) {
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+    }
 </style>
 
 <script>
-    function updateDateDisplay(dateStr) {
+    function formatDate(dateStr) {
         const date = new Date(dateStr + 'T00:00:00');
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        const formattedDate = date.toLocaleDateString('en-US', options);
-        document.getElementById('selected-date-display').textContent = formattedDate;
+        return date.toLocaleDateString('en-US', options);
+    }
+
+    function showPastEntries(dateStr) {
+        if (!dateStr) return;
+
+        // Update the date display
+        document.getElementById('past-date-display').textContent = formatDate(dateStr);
+
+        // Show the past entries wrapper
+        document.getElementById('past-entries-wrapper').classList.remove('hidden');
+
+        // Highlight the selected date button
+        document.querySelectorAll('.past-date-btn').forEach(btn => {
+            if (btn.dataset.date === dateStr) {
+                btn.classList.add('bg-ink-800', 'dark:bg-ink-100', 'text-paper-50', 'dark:text-ink-900');
+                btn.classList.remove('text-ink-600', 'dark:text-ink-300', 'hover:bg-paper-200', 'dark:hover:bg-white/10');
+            } else {
+                btn.classList.remove('bg-ink-800', 'dark:bg-ink-100', 'text-paper-50', 'dark:text-ink-900');
+                btn.classList.add('text-ink-600', 'dark:text-ink-300', 'hover:bg-paper-200', 'dark:hover:bg-white/10');
+            }
+        });
+    }
+
+    function selectPastDate(dateStr) {
+        const datePicker = document.getElementById('date-picker');
+        datePicker.value = dateStr;
+        datePicker.dispatchEvent(new Event('change'));
+    }
+
+    function closePastEntries() {
+        document.getElementById('past-entries-wrapper').classList.add('hidden');
+        document.getElementById('date-picker').value = '';
+
+        // Remove highlight from all date buttons
+        document.querySelectorAll('.past-date-btn').forEach(btn => {
+            btn.classList.remove('bg-ink-800', 'dark:bg-ink-100', 'text-paper-50', 'dark:text-ink-900');
+            btn.classList.add('text-ink-600', 'dark:text-ink-300', 'hover:bg-paper-200', 'dark:hover:bg-white/10');
+        });
     }
 
     // Clear form after successful submission

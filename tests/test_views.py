@@ -1,4 +1,3 @@
-import pytest
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -127,7 +126,7 @@ class TestJournalViews(TestCase):
             reverse("create_entry"),
             {"content": ""},
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(JournalEntry.objects.count(), 0)
 
     def test_get_entries_by_date(self):
