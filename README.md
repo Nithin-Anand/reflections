@@ -220,21 +220,52 @@ DATA_DIR=/app/data
 
 ✅ **The `.env` file is automatically loaded by Docker Compose** - No additional configuration needed
 
+## Updating the Application
+
+When a new version is released, update your deployment while preserving all data:
+
+```bash
+# Navigate to your application directory
+cd reflections
+
+# Pull latest changes from git
+git pull origin main
+
+# Rebuild and restart (data persists automatically)
+docker-compose up -d --build
+
+# Verify everything is working
+docker-compose logs -f journal
+```
+
+**What happens during update:**
+- ✅ New code is deployed
+- ✅ Database migrations run automatically (via `entrypoint.sh`)
+- ✅ All your journal entries are preserved in the volume
+- ✅ User accounts and sessions remain intact
+
+**Rollback if needed:**
+```bash
+# Go back to previous version
+git log --oneline -5  # Find the commit you want
+git checkout <commit-hash>
+docker-compose up -d --build
+```
+
 ### Production Considerations
 
 **After configuring environment variables (see above), consider these additional steps:**
 
 1. **Use a production WSGI server** - Replace Django dev server with gunicorn or uWSGI
 2. **Set up HTTPS** - Use a reverse proxy (nginx, traefik, or Caddy) with Let's Encrypt
-3. **Database backups** - Set up automated backups of the Docker volume:
+3. **Automated backups** - Set up cron job for regular database backups:
    ```bash
-   # Backup the database volume
-   docker run --rm -v productivity-application_journal_data:/data -v $(pwd):/backup \
-     ubuntu tar czf /backup/journal-backup-$(date +%Y%m%d).tar.gz /data
+   # Add to crontab (daily backup at 2 AM)
+   0 2 * * * docker run --rm -v productivity-application_journal_data:/data -v /path/to/backups:/backup ubuntu tar czf /backup/journal-backup-$(date +\%Y\%m\%d).tar.gz /data
    ```
 4. **Monitor logs** - Set up log rotation and monitoring
 5. **Consider PostgreSQL** - For multi-user deployments, migrate from SQLite to PostgreSQL
-6. **Regular updates** - Keep Docker images and dependencies updated
+6. **Regular updates** - Pull and deploy updates regularly for security patches
 
 ## Running Tests
 
