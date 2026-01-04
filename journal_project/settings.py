@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&no-tivt6m(t&@hwiql^!hqfsvyws@it5^@!4=e)zjnty518t1"
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY", "django-insecure-&no-tivt6m(t&@hwiql^!hqfsvyws@it5^@!4=e)zjnty518t1"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",") if os.environ.get("DJANGO_ALLOWED_HOSTS") else []
 
 
 # Application definition
@@ -75,10 +78,17 @@ WSGI_APPLICATION = "journal_project.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Use /app/data/db.sqlite3 when DATA_DIR is set (Docker), otherwise use BASE_DIR
+DATA_DIR = os.environ.get("DATA_DIR")
+if DATA_DIR:
+    DATABASE_PATH = Path(DATA_DIR) / "db.sqlite3"
+else:
+    DATABASE_PATH = BASE_DIR / "db.sqlite3"
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DATABASE_PATH,
     }
 }
 

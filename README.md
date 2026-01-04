@@ -76,7 +76,10 @@ docker-compose down
 
 The application will be available at `http://localhost:8000`
 
-Data is persisted in a Docker volume named `journal_data`.
+**Data Persistence:**
+- SQLite database is stored in a Docker volume named `journal_data`
+- The database file is located at `/app/data/db.sqlite3` inside the container
+- Data persists across container restarts and rebuilds
 
 ### Environment Variables
 
@@ -86,7 +89,16 @@ Create a `.env` file for production deployment:
 DJANGO_SECRET_KEY=your-secret-key-here
 DJANGO_DEBUG=False
 DJANGO_ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+DATA_DIR=/app/data
 ```
+
+Available environment variables:
+- `DJANGO_SECRET_KEY`: Secret key for Django (required for production)
+- `DJANGO_DEBUG`: Set to `False` for production (default: `False`)
+- `DJANGO_ALLOWED_HOSTS`: Comma-separated list of allowed hosts (default: `localhost,127.0.0.1`)
+- `DATA_DIR`: Directory for persistent data (default: not set, uses project root)
+
+**Note:** When running with Docker, `DATA_DIR=/app/data` is automatically set to store the database in the persistent volume.
 
 ### Production Considerations
 
