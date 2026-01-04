@@ -1,0 +1,177 @@
+{% extends 'journal/base.html' %}
+{% load static %}
+
+{% block title %}Journal - Personal Journal{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<header class="glass-panel sticky top-0 z-10 mb-8 border-b border-ink-200 dark:border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-ink-900 dark:text-ink-100 font-serif tracking-tight">Reflections</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm font-medium text-ink-500 dark:text-ink-300 font-sans tracking-wide uppercase">{{ request.user.username }}</span>
+                <form method="post" action="{% url 'logout' %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-ink-300 dark:border-ink-500 rounded-lg text-sm font-medium text-ink-800 dark:text-ink-200 bg-white/50 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-white/10 btn-transition backdrop-blur-sm shadow-sm">
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: New Entry Form -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- New Entry Card -->
+            <div class="glass-panel rounded-xl p-8 dark:bg-paper-800/30">
+                <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-100 mb-6 font-serif">New Reflection</h2>
+                <form hx-post="{% url 'create_entry' %}"
+                      hx-target="#entries-list"
+                      hx-swap="innerHTML"
+                      class="space-y-4">
+                    {% csrf_token %}
+                    <div class="relative">
+                        <!-- Custom CSS for textarea in dark mode needs to be handled or simply use tailwind classes if the widget accepts them. 
+                             Django widgets default rendering is plain. We'll use the same scoped style approach or target textarea generically in base or here. 
+                             Let's add a style block for textarea at the bottom like in login. -->
+                        {{ form.content }}
+                        <!-- Removing the absolute overlay as it might interfere with dark mode input style if not carefully managed. Instead simple border on input is safer. -->
+                    </div>
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-base font-medium text-paper-50 bg-ink-800 dark:bg-ink-100 dark:text-ink-900 hover:bg-ink-900 dark:hover:bg-white btn-transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-500">
+                            <svg class="w-5 h-5 mr-2 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Save Memory
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Entries List -->
+            <div class="glass-panel rounded-xl p-8 min-h-[400px] dark:bg-paper-800/30">
+                <div class="flex items-baseline justify-between mb-8 border-b border-ink-200 dark:border-white/10 pb-4">
+                    <h2 class="text-2xl font-semibold text-ink-900 dark:text-ink-100 font-serif">
+                        <span id="selected-date-display">{{ selected_date|date:"F d, Y" }}</span>
+                    </h2>
+                    <span class="text-sm text-ink-400 dark:text-ink-500 font-sans italic">Daily Chronicles</span>
+                </div>
+                <div id="entries-list">
+                    {% include 'journal/partials/entries.html' %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Calendar -->
+        <div class="lg:col-span-1 space-y-8">
+            <div class="glass-panel rounded-xl p-6 sticky top-24 dark:bg-paper-800/30">
+                <h2 class="text-xl font-semibold text-ink-900 dark:text-ink-100 mb-6 font-serif">Time Travel</h2>
+                <input type="date"
+                       id="date-picker"
+                       value="{{ selected_date|date:'Y-m-d' }}"
+                       class="w-full px-4 py-3 bg-white/50 dark:bg-black/30 border border-ink-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-ink-500 focus:border-transparent text-ink-800 dark:text-ink-200 font-sans shadow-sm"
+                       hx-get="{% url 'get_entries' %}"
+                       hx-target="#entries-list"
+                       hx-swap="innerHTML"
+                       hx-include="this"
+                       hx-trigger="change"
+                       name="date"
+                       onchange="updateDateDisplay(this.value)">
+
+                <!-- Decoration / Quote -->
+                <div class="mt-8 p-6 bg-paper-200/50 dark:bg-black/20 rounded-lg border border-paper-300 dark:border-white/5 text-center">
+                    <div class="text-2xl mb-2 text-ink-400 dark:text-ink-500">❦</div>
+                    <p class="text-sm text-ink-600 dark:text-ink-400 italic font-serif leading-relaxed">"Preserve your memories, for they are the library of your soul."</p>
+                </div>
+            </div>
+            
+            <!-- Random Entry -->
+            {% if random_entry %}
+            <div class="glass-panel rounded-xl p-6 relative overflow-hidden group dark:bg-paper-800/30">
+                <div class="absolute -right-4 -top-4 opacity-5 dark:opacity-10 group-hover:opacity-10 dark:group-hover:opacity-20 transition-opacity rotate-12">
+                    <svg class="w-24 h-24 text-ink-900 dark:text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-semibold text-ink-900 dark:text-ink-100 mb-4 font-serif">Rediscovered Memory</h2>
+                <div class="mb-3">
+                    <span class="text-sm font-bold text-ink-500 dark:text-ink-400 font-sans tracking-wide uppercase">{{ random_entry.timestamp|date:"F d, Y" }}</span>
+                </div>
+                <div class="prose prose-sm prose-stone dark:prose-invert mb-4">
+                    <p class="text-ink-800 dark:text-ink-200 italic font-serif leading-relaxed line-clamp-4">"{{ random_entry.content }}"</p>
+                </div>
+                <button data-date="{{ random_entry.timestamp|date:'Y-m-d' }}"
+                        onclick="document.getElementById('date-picker').value = this.dataset.date; document.getElementById('date-picker').dispatchEvent(new Event('change'));" 
+                        class="text-sm text-ink-600 dark:text-ink-300 hover:text-ink-900 dark:hover:text-white font-medium transition-colors flex items-center group/link">
+                    Travel to this day 
+                    <svg class="w-4 h-4 ml-1 transform group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+    /* Styling for the textarea generated by Django form */
+    textarea {
+        width: 100%;
+        min-height: 150px;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 1px solid #dcd8d3;
+        background-color: rgba(255, 255, 255, 0.5);
+        color: #1a1612;
+        font-family: 'Merriweather', serif;
+        font-size: 1.125rem;
+        line-height: 1.75;
+        resize: vertical;
+        transition: all 0.2s;
+    }
+    textarea:focus {
+        outline: none;
+        border-color: #5c4b37;
+        box-shadow: 0 0 0 3px rgba(92, 75, 55, 0.1);
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        textarea {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #eceae6;
+        }
+        textarea:focus {
+            border-color: #eceae6;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+    }
+</style>
+
+<script>
+    function updateDateDisplay(dateStr) {
+        const date = new Date(dateStr + 'T00:00:00');
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        const formattedDate = date.toLocaleDateString('en-US', options);
+        document.getElementById('selected-date-display').textContent = formattedDate;
+    }
+
+    // Clear form after successful submission
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'entries-list') {
+            const form = document.querySelector('form[hx-post]');
+            if (form) {
+                form.reset();
+            }
+        }
+    });
+</script>
+{% endblock %}

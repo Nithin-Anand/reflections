@@ -1,0 +1,6 @@
+{{ form.content }}
+{% if form.content.errors %}
+<div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+    <p class="text-sm text-red-600">{{ form.content.errors|first }}</p>
+</div>
+{% endif %}

@@ -1,0 +1,21 @@
+[project]
+name = "productivity-application"
+version = "0.1.0"
+description = "Personal journal application with Django, Tailwind CSS, and HTMX"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0.0",
+    "django-htmx>=1.19.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.10",
+    "pytest>=8.0.0",
+    "pytest-django>=4.9.0",
+    "pytest-cov>=6.0.0",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "journal_project.settings"
+python_files = ["test_*.py"]

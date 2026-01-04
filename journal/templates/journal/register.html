@@ -1,0 +1,104 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Register - Personal Journal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300">
+    <div class="max-w-md w-full">
+        <!-- Logo/Header -->
+        <div class="text-center mb-10">
+            <h2 class="text-4xl font-bold text-ink-900 dark:text-ink-100 mb-2 font-serif tracking-tight">Begin Your Journey</h2>
+            <p class="text-ink-500 dark:text-ink-300">Create your private journal</p>
+        </div>
+
+        <!-- Card -->
+        <div class="glass-panel rounded-2xl p-8 backdrop-blur-xl bg-white/50 dark:bg-paper-900/50 shadow-xl border border-white/20 dark:border-white/10">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-semibold text-ink-700 dark:text-ink-200 mb-2 uppercase tracking-wider">
+                        Username
+                    </label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.username.errors|first }}</p>
+                    {% endif %}
+                    {% if form.username.help_text %}
+                    <p class="mt-2 text-xs text-ink-400 dark:text-ink-500">{{ form.username.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="block text-sm font-semibold text-ink-700 dark:text-ink-200 mb-2 uppercase tracking-wider">
+                        Password
+                    </label>
+                    {{ form.password1 }}
+                    {% if form.password1.errors %}
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.password1.errors|first }}</p>
+                    {% endif %}
+                    {% if form.password1.help_text %}
+                    <p class="mt-2 text-xs text-ink-400 dark:text-ink-500">{{ form.password1.help_text }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="block text-sm font-semibold text-ink-700 dark:text-ink-200 mb-2 uppercase tracking-wider">
+                        Confirm Password
+                    </label>
+                    {{ form.password2 }}
+                    {% if form.password2.errors %}
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.password2.errors|first }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-lg shadow-lg text-base font-bold text-paper-50 bg-ink-900 dark:bg-ink-100 dark:text-ink-900 hover:bg-ink-800 dark:hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-500 transition-all duration-200 transform hover:-translate-y-0.5">
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center border-t border-ink-200 dark:border-white/10 pt-6">
+                <p class="text-sm text-ink-500 dark:text-ink-400">
+                    Already have an account?
+                    <a href="{% url 'login' %}" class="font-bold text-ink-900 dark:text-ink-100 hover:text-ink-700 dark:hover:text-white transition-colors duration-200 underline decoration-2 underline-offset-4">
+                        Sign in
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Scoped styles for inputs */
+    input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dcd8d3;
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #1a1612;
+        font-family: 'Merriweather Sans', sans-serif;
+        transition: all 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+        outline: none;
+        border-color: #5c4b37;
+        box-shadow: 0 0 0 3px rgba(92, 75, 55, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        input[type="text"], input[type="password"] {
+            background-color: rgba(26, 22, 18, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fdfbf7;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #eceae6;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Journal{% endblock %}</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Merriweather+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Changed to 'class' for manual control
+            theme: {
+                extend: {
+                    colors: {
+                        paper: {
+                            50: '#fdfbf7',
+                            100: '#f7f3e8',
+                            200: '#eceae6',
+                            300: '#dcd8d3',
+                            400: '#cac2b8',
+                            500: '#b0a698',
+                            600: '#958878',
+                            700: '#75695c',
+                            800: '#5c4b37', // Ink-ish
+                            900: '#3e3223',
+                            950: '#1a1612',
+                        },
+                        ink: {
+                            50: '#f4f4f5',
+                            100: '#e4e4e7', // Light gray for dark mode text
+                            200: '#d4d4d8',
+                            300: '#a1a1aa',
+                            400: '#71717a',
+                            500: '#52525b',
+                            600: '#3f3f46',
+                            700: '#27272a',
+                            800: '#18181b', // Deep black-ish
+                            900: '#09090b', // Proper ink
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Merriweather Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Theme initialization to prevent FOUC -->
+    <script>
+        (function() {
+            const serverTheme = "{{ request.user.profile.theme|default:'' }}";
+            const localTheme = localStorage.getItem('theme');
+            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            
+            let theme = 'system';
+            if (serverTheme && serverTheme !== 'system') {
+                theme = serverTheme;
+            } else if (localTheme && localTheme !== 'system') {
+                theme = localTheme;
+            }
+
+            if (theme === 'dark' || (theme === 'system' && systemTheme === 'dark')) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Store the effective theme logic for later use
+            window.currentThemeSetting = theme;
+        })();
+    </script>
+
+    <style>
+        body {
+            font-family: 'Merriweather', serif;
+            background-color: #fdfbf7; /* paper-50 */
+            color: #1a1612; /* ink-950 */
+            position: relative;
+        }
+        /* Paper texture overlay */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.4;
+        }
+        
+        /* Dark mode overrides using class strategy */
+        .dark body {
+            background-color: #09090b; /* ink-900 */
+            color: #e4e4e7; /* ink-100 */
+        }
+        .dark body::before {
+             filter: invert(1);
+             opacity: 0.03;
+        }
+
+        /* Glassmorphism Classes */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(24, 24, 27, 0.4); /* ink-800/40 */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Smooth transitions */
+        .btn-transition {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+    <div id="content-wrapper" class="flex-grow">
+        {% if user.is_authenticated %}
+            <div class="fixed top-4 right-4 z-50 flex items-center bg-white/80 dark:bg-ink-900/80 backdrop-blur-md rounded-full p-1 border border-ink-200 dark:border-white/10 shadow-lg">
+                <button onclick="setTheme('light')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="Light Mode">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+                <button onclick="setTheme('system')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="System Preference">
+                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                </button>
+                <button onclick="setTheme('dark')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="Dark Mode">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script>
+        function setTheme(theme) {
+            window.currentThemeSetting = theme;
+            localStorage.setItem('theme', theme);
+            
+            // Apply visual change
+            if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Sync with backend
+            if ("{{ user.is_authenticated }}" === "True") {
+                 fetch('{% url "update_theme" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: `theme=${theme}`
+                });
+            }
+            
+            // Update active state of buttons (optional visual feedback)
+            updateActiveButton(theme);
+        }
+
+        function updateActiveButton(theme) {
+             // Logic to highlight the active button could be added here
+        }
+        
+        // Listen for system changes if in system mode
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (window.currentThemeSetting === 'system') {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv/
+ENV/
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# Testing/Coverage
+.pytest_cache
+.coverage
+htmlcov/
+.tox
+.nox
+
+# Build artifacts
+*.egg-info
+dist/
+build/
+
+# Local development files
+*.sqlite3
+db.sqlite3
+.env
+.env.local
+
+# Archive of old code
+_archive/
+
+# NiceGUI cache
+.nicegui
+
+# Ruff cache
+.ruff_cache
+
+# Documentation
+*.md
+!README.md
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Old database (will be migrated separately if needed)
+database/

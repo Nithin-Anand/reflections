@@ -1,0 +1,104 @@
+{% extends 'journal/base.html' %}
+
+{% block title %}Login - Personal Journal{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans transition-colors duration-300">
+    <div class="max-w-md w-full">
+        <!-- Logo/Header -->
+        <div class="text-center mb-10">
+            <h2 class="text-5xl font-bold text-ink-900 dark:text-ink-100 mb-4 font-serif tracking-tight">Reflections</h2>
+            <p class="text-ink-500 dark:text-ink-300 text-lg">Your private sanctuary for thoughts</p>
+        </div>
+
+        <!-- Card -->
+        <div class="glass-panel rounded-2xl p-8 backdrop-blur-xl bg-white/50 dark:bg-paper-900/50 shadow-xl border border-white/20 dark:border-white/10">
+            {% if form.non_field_errors %}
+            <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                {% for error in form.non_field_errors %}
+                <p class="text-red-600 dark:text-red-300 text-sm font-medium">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="block text-sm font-semibold text-ink-700 dark:text-ink-200 mb-2 uppercase tracking-wider">
+                        Username
+                    </label>
+                    {{ form.username }}
+                    <!-- Note: Ensure form widgets have appropriate classes or add them here via JS/server side if needed. 
+                         However, for standard Django widgets, we might need to wrap them or style loosely. 
+                         Adding classes to rendered inputs is cleaner via custom widget tweaks, but I'll add a script to inject classes for now to ensure matches design without changing python code yet. 
+                         Or better, I'll rely on default input styling if global, but previously they had no classes? 
+                         Wait, the previous login.html just rendered {{ form.username }}. 
+                         I will wrap them in a div or target input via CSS in base or use a small script. 
+                         Actually, let's look at the previous content... it was just {{ form.username }}.
+                         I'll add a script to stylize them or just style input[type="text"] in the style block. -->
+                    {% if form.username.errors %}
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.username.errors|first }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="{{ form.password.id_for_label }}" class="block text-sm font-semibold text-ink-700 dark:text-ink-200 mb-2 uppercase tracking-wider">
+                        Password
+                    </label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.password.errors|first }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-lg shadow-lg text-base font-bold text-paper-50 bg-ink-900 dark:bg-ink-100 dark:text-ink-900 hover:bg-ink-800 dark:hover:bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ink-500 transition-all duration-200 transform hover:-translate-y-0.5">
+                        Sign in
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-8 text-center border-t border-ink-200 dark:border-white/10 pt-6">
+                <p class="text-sm text-ink-500 dark:text-ink-400">
+                    Don't have an account?
+                    <a href="{% url 'register' %}" class="font-bold text-ink-900 dark:text-ink-100 hover:text-ink-700 dark:hover:text-white transition-colors duration-200 underline decoration-2 underline-offset-4">
+                        Create one
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Scoped styles for inputs to avoid touching python forms yet */
+    input[type="text"], input[type="password"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dcd8d3; /* ink-200 */
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #1a1612; /* ink-900 */
+        font-family: 'Merriweather Sans', sans-serif;
+        transition: all 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+        outline: none;
+        border-color: #5c4b37; /* ink-500 */
+        box-shadow: 0 0 0 3px rgba(92, 75, 55, 0.1);
+    }
+    
+    @media (prefers-color-scheme: dark) {
+        input[type="text"], input[type="password"] {
+            background-color: rgba(26, 22, 18, 0.6);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #fdfbf7;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            border-color: #eceae6;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+        }
+    }
+</style>
+{% endblock %}
