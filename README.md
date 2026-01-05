@@ -8,11 +8,12 @@ A web-based personal journal application with a clean, modern design, built with
 - Write and save journal entries with timestamps
 - Calendar date picker to view entries by date
 - Clean, modern UI design with Tailwind CSS
-- Theme toggle (light/dark mode)
+- Theme toggle (light/dark mode) with hamburger menu
+- Hamburger menu navigation (username, theme toggle, logout)
+- Mobile-responsive design (consistent hamburger menu across all screen sizes)
 - Dynamic content updates with HTMX (no page reloads)
 - SQLite database for local storage
 - Django admin interface for data management
-- Responsive design for desktop and mobile
 - Docker support for easy deployment
 
 ## Tech Stack
@@ -352,7 +353,8 @@ The application follows Django's MVT (Model-View-Template) architecture:
 3. **Write**: Enter your thoughts in the text area
 4. **Save**: Click "Save Entry" to store your journal entry
 5. **Browse**: Use the date picker to view entries from different dates
-6. **Admin**: Access admin panel at `/admin/` for data management
+6. **Customize**: Click the hamburger menu (☰) to toggle theme or logout
+7. **Admin**: Access admin panel at `/admin/` for data management
 
 ## API Endpoints
 
@@ -361,12 +363,13 @@ The application follows Django's MVT (Model-View-Template) architecture:
 - `POST /login/` - Login form submission
 - `GET /register/` - Registration page
 - `POST /register/` - Registration form submission
-- `GET /logout/` - Logout
+- `POST /logout/` - Logout
 
 ### Journal
 - `GET /` - Main journal page (requires authentication)
 - `POST /create-entry/` - Create new entry (HTMX endpoint)
 - `GET /entries/?date=YYYY-MM-DD` - Get entries by date (HTMX endpoint)
+- `POST /api/theme/update/` - Update user theme preference (light/dark/system)
 
 ## Security Notes
 

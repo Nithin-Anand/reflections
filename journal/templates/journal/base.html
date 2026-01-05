@@ -140,20 +140,7 @@
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
     <div id="content-wrapper" class="flex-grow">
-        {% if user.is_authenticated %}
-            <div class="fixed top-4 right-4 z-50 flex items-center bg-white/80 dark:bg-ink-900/80 backdrop-blur-md rounded-full p-1 border border-ink-200 dark:border-white/10 shadow-lg">
-                <button onclick="setTheme('light')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="Light Mode">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                </button>
-                <button onclick="setTheme('system')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="System Preference">
-                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                </button>
-                <button onclick="setTheme('dark')" class="p-2 rounded-full hover:bg-ink-100 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors" title="Dark Mode">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                </button>
-            </div>
-        {% endif %}
-        {% block content %}
+            {% block content %}
         {% endblock %}
     </div>
 
@@ -161,7 +148,7 @@
         function setTheme(theme) {
             window.currentThemeSetting = theme;
             localStorage.setItem('theme', theme);
-            
+
             // Apply visual change
             if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
@@ -180,15 +167,33 @@
                     body: `theme=${theme}`
                 });
             }
-            
-            // Update active state of buttons (optional visual feedback)
-            updateActiveButton(theme);
+
+            // Update toggle switch visual state
+            updateThemeToggle();
         }
 
-        function updateActiveButton(theme) {
-             // Logic to highlight the active button could be added here
+        function toggleTheme() {
+            // Auto-detect current effective theme and flip it
+            const isDark = document.documentElement.classList.contains('dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            setTheme(newTheme);
         }
-        
+
+        function updateThemeToggle() {
+            // Update toggle switch position based on current theme
+            const isDark = document.documentElement.classList.contains('dark');
+            const toggle = document.getElementById('theme-toggle-switch');
+            if (toggle) {
+                if (isDark) {
+                    toggle.classList.add('translate-x-6');
+                    toggle.classList.remove('translate-x-0');
+                } else {
+                    toggle.classList.add('translate-x-0');
+                    toggle.classList.remove('translate-x-6');
+                }
+            }
+        }
+
         // Listen for system changes if in system mode
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (window.currentThemeSetting === 'system') {
@@ -197,8 +202,12 @@
                 } else {
                     document.documentElement.classList.remove('dark');
                 }
+                updateThemeToggle();
             }
         });
+
+        // Initialize toggle state on page load
+        document.addEventListener('DOMContentLoaded', updateThemeToggle);
     </script>
 </body>
 </html>

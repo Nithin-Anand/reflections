@@ -30,7 +30,7 @@ def journal_view(request):
         JournalEntry.objects.filter(user=request.user)
         .values_list("timestamp__date", flat=True)
         .distinct()
-        .order_by("-timestamp__date")[:30]  # Last 30 unique dates
+        .order_by("timestamp__date")  # Ordered chronologically
     )
 
     return render(

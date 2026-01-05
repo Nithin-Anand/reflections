@@ -42,9 +42,20 @@ The application is built with Django following MVT architecture:
 - ✅ Calendar date picker for viewing entries by date
 - ✅ Modern, clean UI with Tailwind CSS
 - ✅ Dynamic updates with HTMX (no page reloads)
-- ✅ Theme toggle (light/dark mode)
+- ✅ Theme toggle (light/dark mode with hamburger menu)
+- ✅ Hamburger menu navigation (username, theme toggle, logout)
+- ✅ Mobile-responsive design
 - ✅ Docker deployment support
 - ✅ Unit tests for views
+
+## UI/Navigation Details
+- **Hamburger menu** in header (all screen sizes) contains:
+  - Username display
+  - Theme toggle switch (sun/moon icons)
+  - Logout button
+- Theme toggle auto-detects current theme and flips between light/dark
+- New users default to system preference (respects OS dark mode setting)
+- Menu closes on click-outside or Escape key
 
 # Features to Add
 

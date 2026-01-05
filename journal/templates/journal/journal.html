@@ -9,14 +9,51 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <div class="flex justify-between items-center">
             <h1 class="text-3xl font-bold text-ink-900 dark:text-ink-100 font-serif tracking-tight">Reflections</h1>
-            <div class="flex items-center space-x-4">
-                <span class="text-sm font-medium text-ink-500 dark:text-ink-300 font-sans tracking-wide uppercase">{{ request.user.username }}</span>
-                <form method="post" action="{% url 'logout' %}" class="inline">
-                    {% csrf_token %}
-                    <button type="submit" class="inline-flex items-center px-4 py-2 border border-ink-300 dark:border-ink-500 rounded-lg text-sm font-medium text-ink-800 dark:text-ink-200 bg-white/50 dark:bg-black/20 hover:bg-white/80 dark:hover:bg-white/10 btn-transition backdrop-blur-sm shadow-sm">
-                        Logout
-                    </button>
-                </form>
+            <!-- Hamburger Menu -->
+            <div class="relative" id="menu-container">
+                <button onclick="toggleMenu()" id="menu-button" class="p-2 rounded-lg hover:bg-ink-100 dark:hover:bg-white/10 text-ink-700 dark:text-ink-300 transition-colors focus:outline-none focus:ring-2 focus:ring-ink-500 dark:focus:ring-ink-400" aria-label="Open menu" aria-expanded="false">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <!-- Dropdown Menu -->
+                <div id="dropdown-menu" class="hidden absolute right-0 mt-2 w-56 origin-top-right rounded-xl glass-panel dark:!bg-ink-900/95 border border-ink-200 dark:border-white/10 shadow-xl py-2 z-50">
+                    <!-- Username -->
+                    <div class="px-4 py-3 border-b border-ink-200 dark:border-white/10">
+                        <p class="text-xs font-medium text-ink-400 dark:text-ink-500 uppercase tracking-wider">Signed in as</p>
+                        <p class="text-sm font-semibold text-ink-900 dark:text-ink-100 truncate">{{ request.user.username }}</p>
+                    </div>
+                    <!-- Theme Toggle -->
+                    <div class="px-4 py-3 border-b border-ink-200 dark:border-white/10">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium text-ink-700 dark:text-ink-300">Theme</span>
+                            <button onclick="toggleTheme(); event.stopPropagation();" class="relative inline-flex h-7 w-14 items-center rounded-full bg-ink-200 dark:bg-ink-700 transition-colors focus:outline-none focus:ring-2 focus:ring-ink-500 focus:ring-offset-2" aria-label="Toggle theme">
+                                <!-- Sun icon -->
+                                <span class="absolute left-1 text-ink-500 dark:text-ink-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                </span>
+                                <!-- Moon icon -->
+                                <span class="absolute right-1 text-ink-500 dark:text-ink-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                                </span>
+                                <!-- Toggle switch -->
+                                <span id="theme-toggle-switch" class="inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 translate-x-0"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Logout -->
+                    <div class="px-2 py-2">
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="w-full flex items-center px-3 py-2 text-sm font-medium text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -130,38 +167,45 @@
                     <svg class="w-5 h-5 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     Time Travel
                 </h2>
+                
+                <!-- Custom Calendar Widget -->
+                <div id="custom-calendar" class="select-none">
+                    <div class="flex items-center justify-between mb-4">
+                        <button onclick="changeMonth(-1)" class="p-1 rounded-full hover:bg-paper-200 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <h3 id="current-month-year" class="text-base font-bold text-ink-800 dark:text-ink-200 font-sans tracking-wide"></h3>
+                        <button onclick="changeMonth(1)" class="p-1 rounded-full hover:bg-paper-200 dark:hover:bg-white/10 text-ink-500 dark:text-ink-400 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="grid grid-cols-7 mb-2">
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Su</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Mo</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Tu</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">We</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Th</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Fr</div>
+                        <div class="text-center text-xs font-semibold text-ink-400 dark:text-ink-500 uppercase tracking-wider">Sa</div>
+                    </div>
+                    
+                    <div id="calendar-days" class="grid grid-cols-7 gap-1">
+                        <!-- Days generated by JS -->
+                    </div>
+                </div>
+
+                <!-- Hidden Input for Logic -->
                 <input type="date"
                        id="date-picker"
-                       value=""
+                       name="date"
+                       class="hidden"
                        max="{{ today|date:'Y-m-d' }}"
-                       class="w-full px-4 py-3 bg-white/50 dark:bg-black/30 border border-ink-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-ink-500 focus:border-transparent text-ink-800 dark:text-ink-200 font-sans shadow-sm transition-all"
                        hx-get="{% url 'get_entries' %}"
                        hx-target="#past-entries-container"
                        hx-swap="innerHTML"
                        hx-include="this"
-                       hx-trigger="change"
-                       name="date"
-                       onchange="showPastEntries(this.value)">
-
-                <!-- Dates with Entries -->
-                {% if dates_with_entries %}
-                <div class="mt-6">
-                    <h3 class="text-xs font-bold text-ink-500 dark:text-ink-400 mb-3 font-sans uppercase tracking-widest">Recorded Days</h3>
-                    <div class="max-h-48 overflow-y-auto space-y-1 pr-2 scrollbar-thin">
-                        {% for entry_date in dates_with_entries %}
-                        <button data-date="{{ entry_date|date:'Y-m-d' }}"
-                                onclick="selectPastDate(this.dataset.date)"
-                                class="past-date-btn w-full text-left px-3 py-2 rounded-md text-sm font-sans transition-all duration-200 flex items-center text-ink-600 dark:text-ink-300 hover:bg-paper-200 dark:hover:bg-white/10 hover:translate-x-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-ink-400 dark:bg-ink-500 mr-3 flex-shrink-0"></span>
-                            {{ entry_date|date:"M d, Y" }}
-                            {% if entry_date == today %}
-                            <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-ink-100 dark:bg-white/10 text-ink-500 dark:text-ink-400 uppercase tracking-wide">Today</span>
-                            {% endif %}
-                        </button>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
+                       hx-trigger="change">
             </div>
 
             <!-- Past Entries Viewer (Hidden by default) -->
@@ -180,11 +224,115 @@
                             </button>
                         </div>
                         <div id="past-entries-container" class="max-h-96 overflow-y-auto scrollbar-thin pr-2">
-                            <!-- Past entries loaded here via HTMX -->
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <script>
+                // Calendar State
+                let currentCalendarDate = new Date();
+                const today = new Date();
+                const datesWithEntries = new Set([
+                    {% for date in dates_with_entries %}
+                        "{{ date|date:'Y-m-d' }}",
+                    {% endfor %}
+                ]);
+
+                function initCalendar() {
+                    renderCalendar(currentCalendarDate);
+                }
+
+                function changeMonth(delta) {
+                    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + delta);
+                    renderCalendar(currentCalendarDate);
+                }
+
+                function renderCalendar(date) {
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    
+                    // Update header
+                    document.getElementById('current-month-year').textContent = 
+                        new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date);
+                    
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const daysInMonth = lastDay.getDate();
+                    const startingDay = firstDay.getDay(); // 0 is Sunday
+                    
+                    const calendarDays = document.getElementById('calendar-days');
+                    calendarDays.innerHTML = '';
+                    
+                    // Empty slots for days before start of month
+                    for (let i = 0; i < startingDay; i++) {
+                        calendarDays.appendChild(createDayElement(null));
+                    }
+                    
+                    // Days of the month
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        calendarDays.appendChild(createDayElement(new Date(year, month, day)));
+                    }
+                }
+
+                function createDayElement(date) {
+                    const el = document.createElement('div');
+                    el.className = 'aspect-square flex flex-col items-center justify-center rounded-lg text-sm relative transition-all duration-200';
+                    
+                    if (!date) return el; // Empty slot
+                    
+                    const dateStr = date.toISOString().split('T')[0];
+                    const isToday = date.toDateString() === today.toDateString();
+                    const isFuture = date > today;
+                    const hasEntry = datesWithEntries.has(dateStr);
+                    const isSelected = document.getElementById('date-picker').value === dateStr;
+
+                    el.textContent = date.getDate();
+                    
+                    // Base styles
+                    if (isFuture) {
+                        el.classList.add('text-ink-300', 'dark:text-ink-600', 'cursor-not-allowed');
+                    } else {
+                        el.classList.add('cursor-pointer', 'hover:bg-paper-200', 'dark:hover:bg-white/10', 'text-ink-700', 'dark:text-ink-300');
+                        el.onclick = () => selectDate(dateStr);
+                    }
+                    
+                    // Highlighting
+                    if (isSelected) {
+                        el.classList.add('bg-ink-800', 'dark:bg-ink-100', 'text-white', 'dark:text-ink-900', 'font-bold');
+                        el.classList.remove('text-ink-700', 'dark:text-ink-300', 'hover:bg-paper-200', 'dark:hover:bg-white/10');
+                    } else if (isToday) {
+                        el.classList.add('font-bold', 'text-ink-900', 'dark:text-ink-100', 'border', 'border-ink-200', 'dark:border-white/20');
+                    }
+                    
+                    // Entry Indicator (Dot)
+                    if (hasEntry) {
+                        const dot = document.createElement('div');
+                        dot.className = `w-1 h-1 rounded-full mt-1 ${isSelected ? 'bg-white dark:bg-ink-900' : 'bg-ink-400 dark:bg-ink-400'}`;
+                        el.appendChild(dot);
+                    }
+                    
+                    return el;
+                }
+
+                function selectDate(dateStr) {
+                    const datePicker = document.getElementById('date-picker');
+                    datePicker.value = dateStr;
+                    datePicker.dispatchEvent(new Event('change'));
+                    
+                    // Manually trigger showPastEntries to handle UI logic (sidebar vs popup) if needed
+                    // But here showPastEntries is triggered by onchange attribute of input
+                    showPastEntries(dateStr);
+                    
+                    // Rerender to update selection style
+                    renderCalendar(currentCalendarDate);
+                }
+
+                // Initialize calendar on load
+                document.addEventListener('DOMContentLoaded', initCalendar);
+            </script>
+            
+            <!-- Removed redundant script block for showPastEntries as it's defined below -->
             
             <!-- REMOVED: Decoration / Quote Widget -->
             
@@ -253,6 +401,44 @@
 </style>
 
 <script>
+    // Hamburger Menu Functions
+    function toggleMenu() {
+        const menu = document.getElementById('dropdown-menu');
+        const button = document.getElementById('menu-button');
+        const isHidden = menu.classList.contains('hidden');
+
+        if (isHidden) {
+            menu.classList.remove('hidden');
+            button.setAttribute('aria-expanded', 'true');
+        } else {
+            menu.classList.add('hidden');
+            button.setAttribute('aria-expanded', 'false');
+        }
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(event) {
+        const menuContainer = document.getElementById('menu-container');
+        const menu = document.getElementById('dropdown-menu');
+
+        if (menuContainer && !menuContainer.contains(event.target)) {
+            menu.classList.add('hidden');
+            document.getElementById('menu-button').setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    // Close menu on Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const menu = document.getElementById('dropdown-menu');
+            if (!menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+                document.getElementById('menu-button').setAttribute('aria-expanded', 'false');
+                document.getElementById('menu-button').focus();
+            }
+        }
+    });
+
     function formatDate(dateStr) {
         const date = new Date(dateStr + 'T00:00:00');
         const options = { year: 'numeric', month: 'long', day: 'numeric' };
