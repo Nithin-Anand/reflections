@@ -29,6 +29,9 @@
                     {% endif %}
                 </div>
 
+                <!-- Tags -->
+                {% include "journal/partials/entry_tags.html" %}
+
                 <div class="prose prose-stone dark:prose-invert max-w-none">
                     <p class="text-ink-900 dark:text-ink-100 text-lg leading-relaxed whitespace-pre-wrap font-serif">{{ entry.content }}</p>
                 </div>

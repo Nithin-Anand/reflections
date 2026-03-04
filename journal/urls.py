@@ -1,5 +1,6 @@
-from django.urls import path
 from django.contrib.auth import views as auth_views
+from django.urls import path
+
 from . import views
 from .forms import CustomLoginForm
 
@@ -11,6 +12,21 @@ urlpatterns = [
         "api/entries/<int:entry_id>/delete/",
         views.delete_entry_view,
         name="delete_entry",
+    ),
+    path(
+        "api/entries/<int:entry_id>/tags/",
+        views.entry_tags_status_view,
+        name="entry_tags_status",
+    ),
+    path(
+        "api/entries/<int:entry_id>/tags/add/",
+        views.add_tag_view,
+        name="add_tag",
+    ),
+    path(
+        "api/entries/<int:entry_id>/tags/<int:tag_id>/remove/",
+        views.remove_tag_view,
+        name="remove_tag",
     ),
     path("api/theme/update/", views.update_theme, name="update_theme"),
     path("register/", views.register_view, name="register"),

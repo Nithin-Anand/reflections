@@ -1,0 +1,49 @@
+{% if entry.tagged_at is None %}
+<div id="entry-tags-{{ entry.id }}"
+     class="flex flex-wrap items-center gap-1.5 mb-3"
+     hx-get="{% url 'entry_tags_status' entry.id %}"
+     hx-trigger="every 3s"
+     hx-swap="outerHTML">
+    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs text-ink-400 dark:text-ink-500 italic">
+        <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        analyzing...
+    </span>
+</div>
+{% else %}
+<div id="entry-tags-{{ entry.id }}" class="flex flex-wrap items-center gap-1.5 mb-3">
+    {% for tag in entry.tags.all %}
+    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white shadow-sm"
+          style="background-color: {{ tag.color }};"
+          id="tag-{{ entry.id }}-{{ tag.id }}">
+        {{ tag.name }}
+        {% if not target_id %}
+        <button hx-delete="{% url 'remove_tag' entry.id tag.id %}"
+                hx-target="#tag-{{ entry.id }}-{{ tag.id }}"
+                hx-swap="outerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                class="ml-0.5 opacity-70 hover:opacity-100 hover:text-red-200 transition-opacity"
+                title="Remove tag">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+        {% endif %}
+    </span>
+    {% endfor %}
+    {% if not target_id %}
+    <button onclick="showAddTag(this, {{ entry.id }})"
+            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-paper-200 dark:bg-white/10 text-ink-500 dark:text-ink-400 hover:bg-paper-300 dark:hover:bg-white/20 transition-colors"
+            title="Add tag">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        {% if not entry.tags.all %}
+        <span>Add tag</span>
+        {% endif %}
+    </button>
+    {% endif %}
+</div>
+{% endif %}

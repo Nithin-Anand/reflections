@@ -145,3 +145,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "journal"
 LOGOUT_REDIRECT_URL = "login"
+
+# Ollama LLM settings (for auto-tagging)
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "mistral")
+OLLAMA_TIMEOUT = int(os.environ.get("OLLAMA_TIMEOUT", "120"))
+AUTO_TAG_ON_SAVE = os.environ.get("AUTO_TAG_ON_SAVE", "True") == "True"

@@ -492,5 +492,49 @@
             }
         }
     });
+
+    // Tag management
+    function showAddTag(button, entryId) {
+        const container = button.parentElement;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'tag name...';
+        input.className = 'px-2 py-0.5 rounded-full text-xs border border-ink-300 dark:border-ink-600 bg-white dark:bg-ink-800 text-ink-900 dark:text-ink-100 focus:outline-none focus:ring-1 focus:ring-ink-500 w-24';
+        input.maxLength = 50;
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const tagName = input.value.trim().toLowerCase();
+                if (tagName) addTagToEntry(entryId, tagName, input);
+            } else if (e.key === 'Escape') {
+                input.remove();
+            }
+        });
+
+        input.addEventListener('blur', function() {
+            setTimeout(() => { if (input.parentElement) input.remove(); }, 200);
+        });
+
+        container.insertBefore(input, button);
+        input.focus();
+    }
+
+    function addTagToEntry(entryId, tagName, inputEl) {
+        const formData = new FormData();
+        formData.append('tag_name', tagName);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+
+        fetch(`/api/entries/${entryId}/tags/add/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken ? csrfToken.value : '' },
+            body: formData,
+        })
+        .then(response => response.text())
+        .then(html => {
+            const entriesList = document.getElementById('entries-list');
+            if (entriesList) entriesList.innerHTML = html;
+        });
+    }
 </script>
 {% endblock %}

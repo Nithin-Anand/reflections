@@ -1,10 +1,10 @@
 # zsh commands
 
-ruff format # Code formatting
+ruff format # code formatting
 ruff check --fix # linting
 
-ruff check --select I --fix
-ruff format # Need to execute both to sort imports
+ruff check --select i --fix
+ruff format # need to execute both to sort imports
 
 
 # Code Style
@@ -59,12 +59,10 @@ The application is built with Django following MVT architecture:
 
 # Features to Add
 
-- Entry deletion
-- Entry editing
-- Entry ratings/mood tracking
-- Old entries highlighting (visual indicators for age)
-- Word cloud visualization
-- Rich text formatting (WYSIWYG editor)
-- Entry search functionality
-- Tags and categories
-- Export to PDF/Markdown
+- Tags and categories, ideally LLM-powered but my server is CPU only, so see if there's a small LLM that would work.
+  - It would analyse and tag new entries (user can edit the tags if they want maybe), or keep tags completely hidden, not sure.
+- Export user data as JSON, and allow import from JSON as well.
+- I want analysis of my existing entries, and then recommendations/messages back on what to do based on the feedback.
+  - A sort of tailored life coaching?
+  - e.g. if a lot of my journal entries are about frustrations at work, then maybe suggestion/motivation to apply for jobs, highlighting how long I've been frustrated?
+- Voice to text would be good eventually.

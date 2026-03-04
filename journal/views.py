@@ -1,13 +1,14 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login
-from django.utils import timezone
-from django.http import JsonResponse, HttpResponse
-from django.views.decorators.http import require_http_methods
 import random
 
-from .models import JournalEntry, UserProfile
-from .forms import JournalEntryForm, CustomRegisterForm
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
+
+from .forms import CustomRegisterForm, JournalEntryForm
+from .models import TAG_COLORS, JournalEntry, Tag, UserProfile
 
 
 @login_required
@@ -15,7 +16,9 @@ def journal_view(request):
     """Main journal view with entry form and calendar."""
     form = JournalEntryForm()
     today = timezone.now().date()
-    entries = JournalEntry.objects.filter(user=request.user, timestamp__date=today)
+    entries = JournalEntry.objects.filter(
+        user=request.user, timestamp__date=today
+    ).prefetch_related("tags")
 
     # Get random entry from the past
     random_entry = None
@@ -30,7 +33,7 @@ def journal_view(request):
         JournalEntry.objects.filter(user=request.user)
         .values_list("timestamp__date", flat=True)
         .distinct()
-        .order_by("timestamp__date")  # Ordered chronologically
+        .order_by("timestamp__date")
     )
 
     return render(
@@ -58,20 +61,20 @@ def create_entry_view(request):
         entry.user = request.user
         entry.save()
 
-        # Return entries for today (new entries are always for today)
         today = timezone.now().date()
-        entries = JournalEntry.objects.filter(user=request.user, timestamp__date=today)
+        entries = JournalEntry.objects.filter(
+            user=request.user, timestamp__date=today
+        ).prefetch_related("tags")
         return render(
             request,
             "journal/partials/entries.html",
             {
                 "entries": entries,
                 "selected_date": today,
-                "entry_saved": True,  # Flag for JS to show success feedback
+                "entry_saved": True,
             },
         )
 
-    # Handle invalid form (though mostly client-side validation handles this)
     return HttpResponse("Invalid form", status=400)
 
 
@@ -90,7 +93,7 @@ def get_entries_by_date(request):
 
     entries = JournalEntry.objects.filter(
         user=request.user, timestamp__date=selected_date
-    )
+    ).prefetch_related("tags")
 
     return render(
         request,
@@ -109,29 +112,24 @@ def delete_entry_view(request, entry_id):
     """Delete a specific journal entry."""
     entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
 
-    # Capture the date before deleting to return the correct list
     entry_date = entry.timestamp.date()
     target_id = request.GET.get("target", "entries-list")
 
     entry.delete()
 
-    # Return the updated list for that date
-    entries = JournalEntry.objects.filter(user=request.user, timestamp__date=entry_date)
+    entries = JournalEntry.objects.filter(
+        user=request.user, timestamp__date=entry_date
+    ).prefetch_related("tags")
 
     context = {
         "entries": entries,
         "selected_date": entry_date,
     }
 
-    # If deleting from past entries viewer, include target_id
     if target_id == "past-entries-container":
         context["target_id"] = target_id
 
-    return render(
-        request,
-        "journal/partials/entries.html",
-        context,
-    )
+    return render(request, "journal/partials/entries.html", context)
 
 
 def register_view(request):
@@ -157,3 +155,53 @@ def update_theme(request):
         profile.theme = theme
         profile.save()
     return HttpResponse(status=204)
+
+
+@login_required
+def entry_tags_status_view(request, entry_id):
+    """Return the tags partial for a single entry. Used by HTMX polling."""
+    entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+    return render(request, "journal/partials/entry_tags.html", {"entry": entry})
+
+
+@login_required
+@require_http_methods(["POST"])
+def add_tag_view(request, entry_id):
+    """Add a tag to a journal entry."""
+    entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+    tag_name = request.POST.get("tag_name", "").strip().lower()[:50]
+
+    if not tag_name:
+        return HttpResponse("Tag name is required", status=400)
+
+    existing_count = Tag.objects.filter(user=request.user).count()
+    tag, _ = Tag.objects.get_or_create(
+        name=tag_name,
+        user=request.user,
+        defaults={"color": TAG_COLORS[existing_count % len(TAG_COLORS)]},
+    )
+    entry.tags.add(tag)
+
+    entries = JournalEntry.objects.filter(
+        user=request.user, timestamp__date=entry.timestamp.date()
+    ).prefetch_related("tags")
+    return render(
+        request,
+        "journal/partials/entries.html",
+        {"entries": entries, "selected_date": entry.timestamp.date()},
+    )
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def remove_tag_view(request, entry_id, tag_id):
+    """Remove a tag from a journal entry."""
+    entry = get_object_or_404(JournalEntry, id=entry_id, user=request.user)
+    tag = get_object_or_404(Tag, id=tag_id, user=request.user)
+    entry.tags.remove(tag)
+
+    # Clean up orphaned tags
+    if not tag.entries.exists():
+        tag.delete()
+
+    return HttpResponse("")
