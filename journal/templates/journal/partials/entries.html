@@ -1,7 +1,7 @@
 {% if entries %}
     <div class="space-y-8">
         {% for entry in entries %}
-        <div class="relative pl-8 group">
+        <div class="relative pl-8 group entry-animate">
             <!-- Timeline line -->
             <div class="absolute left-0 top-2 bottom-0 w-px bg-ink-200 dark:bg-white/10 group-last:bottom-auto group-last:h-full"></div>
             
@@ -33,15 +33,27 @@
                 {% include "journal/partials/entry_tags.html" %}
 
                 <div class="prose prose-stone dark:prose-invert max-w-none">
-                    <p class="text-ink-900 dark:text-ink-100 text-lg leading-relaxed whitespace-pre-wrap font-serif">{{ entry.content }}</p>
+                    <p class="text-ink-900 dark:text-ink-100 text-lg leading-relaxed whitespace-pre-wrap font-serif line-clamp-6 entry-content"
+                       id="content-{{ entry.id }}"
+                       data-entry-id="{{ entry.id }}">{{ entry.content }}</p>
+                    <button onclick="toggleContent('{{ entry.id }}')"
+                            id="expand-btn-{{ entry.id }}"
+                            data-expanded="false"
+                            class="hidden mt-2 text-sm text-ink-400 dark:text-ink-500 hover:text-ink-700 dark:hover:text-ink-300 font-sans transition-colors focus:outline-none">
+                        Read more ↓
+                    </button>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
 {% else %}
-    <div class="text-center py-8 opacity-60">
-        <div class="mb-4 text-4xl">✍️</div>
+    <div class="text-center py-12 opacity-60">
+        <div class="mb-4 flex justify-center">
+            <svg class="w-12 h-12 text-ink-300 dark:text-ink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+        </div>
         <p class="text-ink-500 dark:text-ink-400 font-serif {% if target_id %}text-sm{% else %}text-lg{% endif %} italic">{% if target_id %}No entries on this day{% else %}The page is blank, waiting for your thoughts...{% endif %}</p>
     </div>
 {% endif %}

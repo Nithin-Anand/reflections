@@ -326,6 +326,48 @@ From the app's hamburger menu, use **Export Journal (JSON)** to download all you
 5. **Consider PostgreSQL** - For multi-user deployments, migrate from SQLite to PostgreSQL
 6. **Regular updates** - Pull and deploy updates regularly for security patches
 
+## Tag Management
+
+Journal entries are auto-tagged by the Ollama LLM when they are saved. For existing entries, use the management command:
+
+### Tag unprocessed entries
+
+```bash
+docker compose exec journal uv run python manage.py auto_tag_entries
+```
+
+By default processes up to 50 entries. Use `--limit` to change:
+
+```bash
+docker compose exec journal uv run python manage.py auto_tag_entries --limit 200
+```
+
+### Re-tag all entries
+
+Forces re-tagging of every entry, including those already tagged (useful after changing the model or prompt):
+
+```bash
+docker compose exec journal uv run python manage.py auto_tag_entries --retag
+```
+
+### Scheduled auto-tagging (cron)
+
+```bash
+# Nightly at 3 AM — tag any new unprocessed entries
+0 3 * * * docker compose -f /path/to/reflections/docker-compose.yml exec -T journal uv run python manage.py auto_tag_entries
+```
+
+### Configuration
+
+| Environment variable | Default | Description |
+|----------------------|---------|-------------|
+| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama server URL |
+| `OLLAMA_MODEL` | `mistral` | Model to use for tagging |
+| `OLLAMA_TIMEOUT` | `120` | Request timeout in seconds |
+| `AUTO_TAG_ON_SAVE` | `True` | Auto-tag new entries on save |
+
+---
+
 ## Running Tests
 
 Run tests:

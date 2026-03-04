@@ -12,6 +12,7 @@ TAGGING_PROMPT = """You are a journal entry tagger. Read the following journal e
 and return ONLY a JSON array of 1-5 short, lowercase tags that categorize the themes \
 and emotions in the entry. Examples of good tags: work, gratitude, anxiety, family, \
 health, creativity, goals, reflection, frustration, travel. \
+Multi-word tags should be space-deliminited, not underscore. Hyphens only when appropriate. \
 Return ONLY the JSON array, nothing else.
 
 Journal entry:
