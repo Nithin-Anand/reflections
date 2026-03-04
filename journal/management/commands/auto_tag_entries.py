@@ -1,7 +1,6 @@
 import logging
 
 from django.core.management.base import BaseCommand
-from django.db.models import F, Q
 
 from journal.models import JournalEntry
 from journal.services.ollama_client import OllamaClient
@@ -23,7 +22,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--retag",
             action="store_true",
-            help="Also re-tag entries that were updated after their last tagging",
+            help="Re-tag all entries, including those already tagged",
         )
 
     def handle(self, *args, **options):
@@ -41,12 +40,10 @@ class Command(BaseCommand):
             f"Connected to Ollama at {client.base_url} (model: {client.model})"
         )
 
-        queryset = JournalEntry.objects.filter(tagged_at__isnull=True)
-
         if options["retag"]:
-            queryset = JournalEntry.objects.filter(
-                Q(tagged_at__isnull=True) | Q(tagged_at__lt=F("updated_at"))
-            )
+            queryset = JournalEntry.objects.all()
+        else:
+            queryset = JournalEntry.objects.filter(tagged_at__isnull=True)
 
         entries = queryset.order_by("-timestamp")[: options["limit"]]
         total = entries.count()

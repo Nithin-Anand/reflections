@@ -337,3 +337,18 @@ class TestOllamaClient(TestCase):
         client = OllamaClient(base_url="http://localhost:11434")
         tags = client.generate_tags("entry text")
         self.assertEqual(tags, [])
+
+    @patch("journal.services.ollama_client.urllib.request.urlopen")
+    def test_generate_tags_handles_wrapped_response(self, mock_urlopen):
+        """Model wraps the JSON array in extra prose — regex should extract it."""
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = json.dumps(
+            {"response": 'Here are the tags:\n["work", "frustration"]\nLet me know if you need more.'}
+        ).encode()
+        mock_resp.__enter__ = lambda s: s
+        mock_resp.__exit__ = MagicMock(return_value=False)
+        mock_urlopen.return_value = mock_resp
+
+        client = OllamaClient(base_url="http://localhost:11434")
+        tags = client.generate_tags("Stressed about work deadlines")
+        self.assertEqual(tags, ["work", "frustration"])

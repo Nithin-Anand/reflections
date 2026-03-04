@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import urllib.error
 import urllib.request
 
@@ -59,7 +60,12 @@ class OllamaClient:
             with urllib.request.urlopen(req, timeout=self.timeout) as resp:
                 result = json.loads(resp.read().decode("utf-8"))
                 response_text = result.get("response", "").strip()
-                tags = json.loads(response_text)
+                # Models often wrap the array in extra text; extract it with regex
+                match = re.search(r"\[.*?\]", response_text, re.DOTALL)
+                if not match:
+                    logger.warning("Ollama response contained no JSON array: %r", response_text[:200])
+                    return []
+                tags = json.loads(match.group())
                 if isinstance(tags, list):
                     return [
                         str(t).lower().strip()[:50] for t in tags[:5] if str(t).strip()

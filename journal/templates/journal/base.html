@@ -139,6 +139,29 @@
     </style>
 </head>
 <body class="font-sans antialiased min-h-screen flex flex-col transition-colors duration-300">
+    {% if messages %}
+    <div id="messages-container" class="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
+        {% for message in messages %}
+        <div class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border text-sm font-medium
+            {% if message.tags == 'success' %}bg-green-50 border-green-200 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200
+            {% elif message.tags == 'error' %}bg-red-50 border-red-200 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200
+            {% else %}bg-paper-50 border-ink-200 text-ink-800 dark:bg-ink-800 dark:border-ink-600 dark:text-ink-200{% endif %}">
+            <span class="flex-1">{{ message }}</span>
+            <button onclick="this.parentElement.remove()" class="opacity-60 hover:opacity-100 transition-opacity ml-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            const container = document.getElementById('messages-container');
+            if (container) container.remove();
+        }, 6000);
+    </script>
+    {% endif %}
     <div id="content-wrapper" class="flex-grow">
             {% block content %}
         {% endblock %}

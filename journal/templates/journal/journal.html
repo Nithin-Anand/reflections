@@ -41,8 +41,30 @@
                             </button>
                         </div>
                     </div>
+                    <!-- Data Import/Export -->
+                    <div class="px-2 py-2 border-t border-ink-200 dark:border-white/10">
+                        <a href="{% url 'export_data' %}"
+                           class="w-full flex items-center px-3 py-2 text-sm font-medium text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+                            <svg class="w-4 h-4 mr-3 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Export Journal (JSON)
+                        </a>
+                        <form method="post" action="{% url 'import_data' %}" enctype="multipart/form-data" id="import-form">
+                            {% csrf_token %}
+                            <input type="file" name="file" id="import-file" accept=".json" class="hidden"
+                                   onchange="document.getElementById('import-form').submit()">
+                            <button type="button" onclick="document.getElementById('import-file').click()"
+                                    class="w-full flex items-center px-3 py-2 text-sm font-medium text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/10 rounded-lg transition-colors">
+                                <svg class="w-4 h-4 mr-3 text-ink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l4-4m0 0l4 4m-4-4v12"></path>
+                                </svg>
+                                Import Journal (JSON)
+                            </button>
+                        </form>
+                    </div>
                     <!-- Logout -->
-                    <div class="px-2 py-2">
+                    <div class="px-2 py-2 border-t border-ink-200 dark:border-white/10">
                         <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
                             <button type="submit" class="w-full flex items-center px-3 py-2 text-sm font-medium text-ink-700 dark:text-ink-300 hover:bg-ink-100 dark:hover:bg-white/10 rounded-lg transition-colors">

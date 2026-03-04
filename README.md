@@ -253,6 +253,64 @@ git checkout <commit-hash>
 docker-compose up -d --build
 ```
 
+## Backup & Data Protection
+
+Before any upgrade (or on a schedule), back up your SQLite database.
+
+### Manual backup (while container is running)
+
+```bash
+docker compose cp journal:/app/data/db.sqlite3 ./db_backup_$(date +%Y%m%d).sqlite3
+```
+
+### Volume-level backup (works even if container is stopped)
+
+```bash
+docker run --rm \
+  -v productivity-application_journal_data:/data \
+  -v $(pwd):/backup \
+  alpine cp /data/db.sqlite3 /backup/db_backup_$(date +%Y%m%d).sqlite3
+```
+
+### Automated daily backup (cron)
+
+```bash
+# Add to crontab: daily at 2 AM, keeps last 30 days
+0 2 * * * docker run --rm \
+  -v productivity-application_journal_data:/data \
+  -v /path/to/backups:/backup \
+  alpine sh -c "cp /data/db.sqlite3 /backup/db_backup_\$(date +\%Y\%m\%d).sqlite3 && find /backup -name 'db_backup_*.sqlite3' -mtime +30 -delete"
+```
+
+### Pre-upgrade procedure
+
+Always back up before pulling a new version:
+
+```bash
+# 1. Back up first
+docker compose cp journal:/app/data/db.sqlite3 ./db_backup_$(date +%Y%m%d).sqlite3
+# 2. Then upgrade
+git pull origin main
+docker compose up -d --build
+```
+
+### Restore from backup
+
+```bash
+docker compose down
+docker run --rm \
+  -v productivity-application_journal_data:/data \
+  -v $(pwd):/backup \
+  alpine cp /backup/db_backup_YYYYMMDD.sqlite3 /data/db.sqlite3
+docker compose up -d
+```
+
+### JSON export (portable backup)
+
+From the app's hamburger menu, use **Export Journal (JSON)** to download all your entries as a human-readable JSON file. This can be re-imported via **Import Journal (JSON)** on any instance. Duplicate entries are skipped automatically on import.
+
+---
+
 ### Production Considerations
 
 **After configuring environment variables (see above), consider these additional steps:**

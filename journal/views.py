@@ -1,5 +1,8 @@
+import json
 import random
+from datetime import datetime
 
+from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
@@ -205,3 +208,94 @@ def remove_tag_view(request, entry_id, tag_id):
         tag.delete()
 
     return HttpResponse("")
+
+
+@login_required
+def export_data_view(request):
+    """Export all journal entries for the logged-in user as JSON."""
+    entries = (
+        JournalEntry.objects.filter(user=request.user)
+        .prefetch_related("tags")
+        .order_by("timestamp")
+    )
+
+    data = {
+        "exported_at": timezone.now().isoformat(),
+        "username": request.user.username,
+        "version": 1,
+        "entries": [
+            {
+                "content": entry.content,
+                "timestamp": entry.timestamp.isoformat(),
+                "tags": [tag.name for tag in entry.tags.all()],
+            }
+            for entry in entries
+        ],
+    }
+
+    filename = f"reflections_export_{timezone.now().strftime('%Y%m%d')}.json"
+    response = HttpResponse(
+        json.dumps(data, indent=2),
+        content_type="application/json",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+@require_http_methods(["POST"])
+def import_data_view(request):
+    """Import journal entries from a JSON file."""
+    file = request.FILES.get("file")
+    if not file:
+        messages.error(request, "No file provided.")
+        return redirect("journal")
+
+    try:
+        data = json.loads(file.read().decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        messages.error(request, "Invalid JSON file.")
+        return redirect("journal")
+
+    if not isinstance(data, dict) or "entries" not in data:
+        messages.error(request, "Invalid export format.")
+        return redirect("journal")
+
+    imported = 0
+    skipped = 0
+
+    for item in data.get("entries", []):
+        try:
+            timestamp = datetime.fromisoformat(item["timestamp"])
+            content = item["content"]
+        except (KeyError, ValueError):
+            skipped += 1
+            continue
+
+        entry, created = JournalEntry.objects.get_or_create(
+            user=request.user,
+            timestamp=timestamp,
+            content=content,
+        )
+
+        if created:
+            for tag_name in item.get("tags", []):
+                tag_name = tag_name.strip().lower()[:50]
+                if tag_name:
+                    existing_count = Tag.objects.filter(user=request.user).count()
+                    tag, _ = Tag.objects.get_or_create(
+                        name=tag_name,
+                        user=request.user,
+                        defaults={
+                            "color": TAG_COLORS[existing_count % len(TAG_COLORS)]
+                        },
+                    )
+                    entry.tags.add(tag)
+            imported += 1
+        else:
+            skipped += 1
+
+    messages.success(
+        request, f"Import complete: {imported} entries imported, {skipped} skipped."
+    )
+    return redirect("journal")

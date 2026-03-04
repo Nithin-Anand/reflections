@@ -29,6 +29,8 @@ urlpatterns = [
         name="remove_tag",
     ),
     path("api/theme/update/", views.update_theme, name="update_theme"),
+    path("api/data/export/", views.export_data_view, name="export_data"),
+    path("api/data/import/", views.import_data_view, name="import_data"),
     path("register/", views.register_view, name="register"),
     path(
         "login/",
