@@ -5,7 +5,7 @@ description = "Personal journal application with Django, Tailwind CSS, and HTMX"
 requires-python = ">=3.12"
 dependencies = [
     "django>=5.0.0",
-    "django-htmx>=1.19.0",
+    "django-htmx>=1.27.0",
 ]
 
 [dependency-groups]
